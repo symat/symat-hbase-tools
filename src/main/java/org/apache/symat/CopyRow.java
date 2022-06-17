@@ -113,6 +113,7 @@ public class CopyRow {
                 }
                 if(numberOfCells == 0) {
                     LOG.warn("source table {}: exiting, no data found in row {}", sourceTable, rowKeyByteString);
+                    return;
                 }
                 try(Table dest = connection.getTable(TableName.valueOf(destTable))) {
                     LOG.info("dest table {}: override timestamp: {}", destTable, override);
