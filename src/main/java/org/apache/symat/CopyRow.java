@@ -49,7 +49,7 @@ public class CopyRow {
         System.out.println("options:");
         System.out.println("    --sourceTable <ns:table>         : source table");
         System.out.println("    --destTable <ns:table>           : destination table (can be same as source table)");
-        System.out.println("    --rowKeyByteString <row key byte string, as printed in HBase shell>");
+        System.out.println("    --rowKeyByteString <row key>     : row key byte string, as printed in HBase shell");
         System.out.println("    --override <true|false>          : if true, then timestamp will be changed before push");
         System.out.println("    --timestampToUse <epochMillis>   : if override=true, you can specify timestamp (default: current time)");
         System.exit(1);
