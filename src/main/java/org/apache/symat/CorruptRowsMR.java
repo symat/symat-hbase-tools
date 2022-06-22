@@ -37,6 +37,7 @@ import org.apache.hadoop.hbase.mapred.TableMap;
 import org.apache.hadoop.hbase.mapred.TableMapReduceUtil;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
@@ -74,6 +75,19 @@ public class CorruptRowsMR extends Configured implements Tool {
                     new FirstKeyOnlyFilter(),
                     new KeyOnlyFilter());
             setRowFilter(filters);
+        }
+
+        @Override
+        protected void initialize(JobConf job) throws IOException {
+            String colArg = job.get(COLUMN_LIST);
+            String[] colNames = colArg.split(" ");
+            byte [][] m_cols = new byte[colNames.length][];
+            for (int i = 0; i < m_cols.length; i++) {
+                m_cols[i] = Bytes.toBytes(colNames[i]);
+            }
+            setInputColumns(m_cols);
+            Connection connection = ConnectionFactory.createConnection(job);
+            initializeTable(connection, TableName.valueOf(job.get("corruptRowsMR.table")));
         }
 
     }
@@ -224,7 +238,7 @@ public class CorruptRowsMR extends Configured implements Tool {
         JobConf c = new JobConf(getConf(), getClass());
         c.setJobName("CorruptRowsMR");
 
-        TableMapReduceUtil.initTableMapJob(
+        MrUtil.initTableMapJob(
                 table,                              // table name
                 String.join(" ", families), // list of column families to scan
                 MyMapper.class,                     // mapper
