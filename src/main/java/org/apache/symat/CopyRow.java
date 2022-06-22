@@ -43,15 +43,15 @@ public class CopyRow {
     private static final Logger LOG =  LoggerFactory.getLogger(CopyRow.class);
 
     private static void printUsageAndDie() {
-        System.out.println("usage: ");
-        System.out.println("  export HBASE_CLASSPATH=./symat-hbase-tools-1.0.jar");
-        System.out.println("  hbase org.apache.symat.CopyRow <options> \n");
-        System.out.println("options:");
-        System.out.println("    --sourceTable <ns:table>         : source table");
-        System.out.println("    --destTable <ns:table>           : destination table (can be same as source table)");
-        System.out.println("    --rowKeyByteString <row key>     : row key byte string, as printed in HBase shell");
-        System.out.println("    --override <true|false>          : if true, then timestamp will be changed before push");
-        System.out.println("    --timestampToUse <epochMillis>   : if override=true, you can specify timestamp (default: current time)");
+        System.err.println("usage: ");
+        System.err.println("  export HBASE_CLASSPATH=./symat-hbase-tools-1.0.jar");
+        System.err.println("  hbase org.apache.symat.CopyRow <options> \n");
+        System.err.println("options:");
+        System.err.println("    --sourceTable <ns:table>         : source table");
+        System.err.println("    --destTable <ns:table>           : destination table (can be same as source table)");
+        System.err.println("    --rowKeyByteString <row key>     : row key byte string, as printed in HBase shell");
+        System.err.println("    --override <true|false>          : if true, then timestamp will be changed before push");
+        System.err.println("    --timestampToUse <epochMillis>   : if override=true, you can specify timestamp (default: current time)");
         System.exit(1);
     }
 
@@ -83,17 +83,17 @@ public class CopyRow {
         }
 
         if(sourceTable.isEmpty()) {
-            System.out.println("ERROR! missing source table parameter");
+            System.err.println("ERROR! missing source table parameter");
             printUsageAndDie();
         }
 
         if(destTable.isEmpty()) {
-            System.out.println("ERROR! missing destination table parameter");
+            System.err.println("ERROR! missing destination table parameter");
             printUsageAndDie();
         }
 
         if(rowKeyByteString.isEmpty()) {
-            System.out.println("ERROR! missing row key parameter");
+            System.err.println("ERROR! missing row key parameter");
             printUsageAndDie();
         }
 
