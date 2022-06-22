@@ -1,5 +1,4 @@
 /**
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -7,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,7 +27,6 @@ import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.filter.FirstKeyOnlyFilter;
@@ -38,14 +36,13 @@ import org.apache.hadoop.hbase.mapred.TableInputFormat;
 import org.apache.hadoop.hbase.mapred.TableMap;
 import org.apache.hadoop.hbase.mapred.TableMapReduceUtil;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TextOutputFormat;
-import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.slf4j.Logger;
@@ -55,15 +52,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.hadoop.mapred.FileOutputFormat;
-
 /**
  * this is a map-reduce job iterating through all HBase rows
  * and collect all row keys where the GET operation throws exception
  */
-public class CorruptRowsMR extends Configured implements Tool  {
+public class CorruptRowsMR extends Configured implements Tool {
 
-    private static final Logger LOG =  LoggerFactory.getLogger(CorruptRowsMR.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CorruptRowsMR.class);
 
     private enum Counters {
         TOTAL_ROWS,
@@ -83,9 +78,8 @@ public class CorruptRowsMR extends Configured implements Tool  {
 
     }
 
-    static class MyMapper implements TableMap<Text, Text>
-    {
-        private static final Logger LOG =  LoggerFactory.getLogger(MyMapper.class);
+    static class MyMapper implements TableMap<Text, Text> {
+        private static final Logger LOG = LoggerFactory.getLogger(MyMapper.class);
         private Table table;
         private Connection connection;
         private JobConf jobConf;
@@ -96,22 +90,23 @@ public class CorruptRowsMR extends Configured implements Tool  {
         }
 
         private synchronized Connection initOrGetConnection() throws IOException {
-            if(connection == null) {
+            if (connection == null) {
                 Configuration conf = HBaseConfiguration.create(jobConf);
                 connection = ConnectionFactory.createConnection(conf);
             }
-            if(connection == null) {
+            if (connection == null) {
                 throw new IllegalStateException("unable to initialize HBase connection");
             }
             return connection;
         }
-         private synchronized Table initOrGetTable() throws IOException  {
-            if(table == null) {
+
+        private synchronized Table initOrGetTable() throws IOException {
+            if (table == null) {
                 table = initOrGetConnection().getTable(TableName.valueOf(tableName));
             }
-             if(connection == null) {
-                 throw new IllegalStateException("unable to initialize HBase table");
-             }
+            if (connection == null) {
+                throw new IllegalStateException("unable to initialize HBase table");
+            }
             return table;
         }
 
@@ -127,9 +122,9 @@ public class CorruptRowsMR extends Configured implements Tool  {
             try {
                 Result r = t.get(new Get(rowKey));
                 reporter.incrCounter(Counters.SUCCESS_ROWS, 1);
-                if(r != null && r.listCells() != null && traceCells) {
+                if (r != null && r.listCells() != null && traceCells) {
                     LOG.info("------- row: {}", Bytes.toStringBinary(rowKey));
-                    for(Cell cell : r.listCells()) {
+                    for (Cell cell : r.listCells()) {
                         LOG.info("Cell: {} - value: {}",
                                 cell.toString(),
                                 Bytes.toStringBinary(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength()));
@@ -137,13 +132,13 @@ public class CorruptRowsMR extends Configured implements Tool  {
                 }
             } catch (Exception e) {
                 reporter.incrCounter(Counters.FAILED_ROWS, 1);
-                if(traceCells) {
+                if (traceCells) {
                     LOG.error("exception with type: " + e.getClass().getSimpleName() + " and message: " + e.getMessage(), e);
                 }
                 String message = e.getMessage();
-                if(message != null && !message.trim().isEmpty()) {
+                if (message != null && !message.trim().isEmpty()) {
                     String[] parts = e.getMessage().split("\r\n|\r|\n", 2);
-                    if(parts != null && parts.length >= 1) {
+                    if (parts != null && parts.length >= 1) {
                         message = parts[0];
                     } else {
                         message = "n/a";
@@ -189,10 +184,10 @@ public class CorruptRowsMR extends Configured implements Tool  {
         String table = "";
         String output = "";
         boolean traceCells = false;
-        if(args.length %2 != 0) {
+        if (args.length % 2 != 0) {
             printUsageAndDie();
         }
-        for(int i=0; i< args.length; i++) {
+        for (int i = 0; i < args.length; i++) {
             if (args[i].equals("--table")) {
                 table = args[++i];
             } else if (args[i].equals("--output")) {
@@ -203,11 +198,11 @@ public class CorruptRowsMR extends Configured implements Tool  {
                 printUsageAndDie();
             }
         }
-        if(table.isEmpty()) {
+        if (table.isEmpty()) {
             System.err.println("missing parameter: --table");
             printUsageAndDie();
         }
-        if(output.isEmpty()) {
+        if (output.isEmpty()) {
             System.err.println("missing parameter: --output");
             printUsageAndDie();
         }
@@ -217,8 +212,8 @@ public class CorruptRowsMR extends Configured implements Tool  {
 
     private List<String> allFamilies(String table) throws IOException {
         Configuration conf = HBaseConfiguration.create();
-        try(Connection connection = ConnectionFactory.createConnection(conf)) {
-            try(Table t = connection.getTable(TableName.valueOf(table))) {
+        try (Connection connection = ConnectionFactory.createConnection(conf)) {
+            try (Table t = connection.getTable(TableName.valueOf(table))) {
                 return t.getDescriptor().getColumnFamilyNames().stream()
                         .map(Bytes::toString).collect(Collectors.toList());
             }
@@ -247,8 +242,7 @@ public class CorruptRowsMR extends Configured implements Tool  {
         return c;
     }
 
-    public static void main( String[] args ) throws Exception
-    {
+    public static void main(String[] args) throws Exception {
         int errCode = ToolRunner.run(HBaseConfiguration.create(), new CorruptRowsMR(), args);
         System.exit(errCode);
     }
