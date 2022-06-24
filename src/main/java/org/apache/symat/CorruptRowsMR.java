@@ -34,10 +34,8 @@ import org.apache.hadoop.hbase.filter.KeyOnlyFilter;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapred.TableInputFormat;
 import org.apache.hadoop.hbase.mapred.TableMap;
-import org.apache.hadoop.hbase.mapred.TableMapReduceUtil;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
@@ -137,7 +135,7 @@ public class CorruptRowsMR extends Configured implements Tool {
                 Result r = t.get(new Get(rowKey));
                 reporter.incrCounter(Counters.SUCCESS_ROWS, 1);
                 if (r != null && r.listCells() != null && traceCells) {
-                    LOG.info("------- row: {}", Bytes.toStringBinary(rowKey));
+                    LOG.info("------- row: {}, number of cells: {}", Bytes.toStringBinary(rowKey), r.listCells().size());
                     for (Cell cell : r.listCells()) {
                         LOG.info("Cell: {} - value: {}",
                                 cell.toString(),
@@ -169,7 +167,12 @@ public class CorruptRowsMR extends Configured implements Tool {
 
         @Override
         public void close() throws IOException {
-
+            if (table != null) {
+                table.close();
+            }
+            if (connection != null) {
+                connection.close();
+            }
         }
 
         @Override
@@ -183,7 +186,7 @@ public class CorruptRowsMR extends Configured implements Tool {
 
     private static void printUsageAndDie() {
         System.err.println("usage: ");
-        System.err.println("  export HBASE_CLASSPATH=./symat-hbase-tools-1.0.jar");
+        System.err.println("  export HBASE_CLASSPATH=./symat-hbase-tools-<version>.jar");
         System.err.println("  hbase org.apache.symat.CorruptRowsMR <options> \n");
         System.err.println("options:");
         System.err.println("    --table <ns:table>           : table to scan (mandatory)");
@@ -238,7 +241,7 @@ public class CorruptRowsMR extends Configured implements Tool {
         JobConf c = new JobConf(getConf(), getClass());
         c.setJobName("CorruptRowsMR");
 
-        MrUtil.initTableMapJob(
+        MRUtil.initTableMapJob(
                 table,                              // table name
                 String.join(" ", families), // list of column families to scan
                 MyMapper.class,                     // mapper

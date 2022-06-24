@@ -24,12 +24,20 @@ import org.apache.hadoop.hbase.mapreduce.MutationSerialization;
 import org.apache.hadoop.hbase.mapreduce.ResultSerialization;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class MrUtil extends TableMapReduceUtil {
+public class MRUtil extends TableMapReduceUtil {
 
+    private static final Logger LOG = LoggerFactory.getLogger(MRUtil.class);
 
+    /**
+     * This static method is similar to the implementation of the super class.
+     * The only difference is how we set the input table.
+     * (this fix needed to make suer that non-default namespaces are working too)
+     */
     public static void initTableMapJob(String table, String columns,
                                        Class<? extends TableMap> mapper,
                                        Class<?> outputKeyClass,
@@ -48,14 +56,13 @@ public class MrUtil extends TableMapReduceUtil {
             try {
                 addDependencyJars(job);
             } catch (IOException e) {
-                e.printStackTrace();
+                LOG.error("unable to add dependency jars", e);
             }
         }
         try {
             initCredentials(job);
         } catch (IOException ioe) {
-            // just spit out the stack trace?  really?
-            ioe.printStackTrace();
+            LOG.error("unable to init credentials", ioe);
         }
     }
 }
